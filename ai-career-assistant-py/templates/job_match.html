@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}岗位匹配 - AI求职助手{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="gradient-text">岗位匹配</h1>
+        <p>AI精准分析简历与目标岗位的匹配度，发现差距与提升方向</p>
+    </div>
+    <div class="two-col">
+        <!-- 输入区 -->
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+            <div class="glass-card card-section">
+                <h2><span class="step-badge" style="background:#ede9fe;color:#7c3aed;">1</span>您的简历</h2>
+                <div class="upload-area">
+                    <button class="upload-btn" style="background:#f5f3ff;color:#7c3aed;" onclick="document.getElementById('fileInput').click()">上传简历</button>
+                    <span class="file-name" id="fileName"></span>
+                    <input type="file" id="fileInput" accept=".pdf,.txt,.md" style="display:none;" onchange="handleFile(this)">
+                </div>
+                <textarea id="resumeText" class="form-input" rows="8" placeholder="粘贴简历内容或上传简历文件..."></textarea>
+            </div>
+            <div class="glass-card card-section">
+                <h2><span class="step-badge" style="background:#fff7ed;color:#ea580c;">2</span>目标岗位描述</h2>
+                <textarea id="jobDesc" class="form-input" rows="8" placeholder="请粘贴目标岗位的JD描述，包含岗位职责、任职要求等..."></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" id="matchBtn" onclick="handleMatch()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);box-shadow:0 4px 12px rgba(124,58,237,0.3);">
+                开始匹配分析
+            </button>
+        </div>
+        <!-- 结果区 -->
+        <div class="glass-card card-section">
+            <h2><span class="step-badge" style="background:#d1fae5;color:#059669;">3</span>匹配分析结果</h2>
+            <div id="result" class="result-content">
+                <div class="empty-state">
+                    <div><div class="icon">🎯</div><p>输入简历和岗位描述后，AI将分析匹配度</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+const SYSTEM_PROMPT = `你是一位专业的职业顾问和招聘专家。你的任务是根据用户提供的简历和目标岗位描述，分析简历与岗位的匹配度。请从以下维度进行分析：
+1. 技能匹配度（列出匹配和缺失的技能）
+2. 经验匹配度
+3. 学历匹配度
+4. 行业匹配度
+5. 综合匹配度评分（百分比）
+6. 具体的改进建议
+请用Markdown格式输出，包含表格和清晰的层级结构。`;
+
+async function handleFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('fileName').textContent = file.name;
+    try {
+        const data = await uploadResume(file);
+        document.getElementById('resumeText').value = data.text;
+    } catch (e) { alert(e.message || '文件解析失败'); }
+}
+
+async function handleMatch() {
+    const resume = document.getElementById('resumeText').value.trim();
+    const jobDesc = document.getElementById('jobDesc').value.trim();
+    if (!resume || !jobDesc) { alert('请输入简历和岗位描述'); return; }
+    const btn = document.getElementById('matchBtn');
+    const result = document.getElementById('result');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> AI正在匹配...';
+    result.innerHTML = loadingHTML();
+    try {
+        const res = await callAI(SYSTEM_PROMPT, `我的简历内容：\n${resume}\n\n目标岗位描述：\n${jobDesc}`);
+        result.innerHTML = renderMarkdown(res);
+    } catch (e) {
+        result.innerHTML = `<p style="color:#ef4444;">请求失败：${e.message}</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '开始匹配分析';
+    }
+}
+</script>
+{% endblock %}

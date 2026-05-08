@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI求职与职业发展助手{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="/" class="nav-logo">
+                <div class="nav-logo-icon">AI</div>
+                <span class="nav-logo-text">求职助手</span>
+            </a>
+            <div class="nav-links">
+                <a href="/">首页</a>
+                <a href="/resume-optimize">简历优化</a>
+                <a href="/job-match">岗位匹配</a>
+                <a href="/career-assess">职业测评</a>
+                <a href="/resume-generate">简历生成</a>
+                <a href="/resume-evaluate">简历评价</a>
+                <a href="/interview">模拟面试</a>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="/">首页</a>
+            <a href="/resume-optimize">简历优化</a>
+            <a href="/job-match">岗位匹配</a>
+            <a href="/career-assess">职业测评</a>
+            <a href="/resume-generate">简历生成</a>
+            <a href="/resume-evaluate">简历评价</a>
+            <a href="/interview">模拟面试</a>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    {% block content %}{% endblock %}
+
+    <!-- 页脚 -->
+    {% block footer %}
+    <footer style="background:#1e293b;color:#94a3b8;padding:2.5rem 0;text-align:center;">
+        <p style="font-size:0.875rem;">AI求职与职业发展助手 — 让科技助力每一位求职者</p>
+        <p style="font-size:0.75rem;color:#64748b;margin-top:0.5rem;">基于大模型技术构建 | 支持文本与PDF简历</p>
+    </footer>
+    {% endblock %}
+
+    <script src="/static/js/common.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

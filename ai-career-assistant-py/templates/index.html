@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}AI求职与职业发展助手 - 首页{% endblock %}
+{% block content %}
+<!-- Hero -->
+<section style="position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#2563eb,#4f46e5,#6366f1);"></div>
+    <div style="position:relative;max-width:1200px;margin:0 auto;padding:6rem 1.5rem;text-align:center;">
+        <h1 style="font-size:2.75rem;font-weight:800;color:white;letter-spacing:-0.025em;">AI求职与职业发展助手</h1>
+        <p style="margin-top:1.5rem;font-size:1.15rem;color:rgba(191,219,254,0.9);max-width:720px;margin-left:auto;margin-right:auto;line-height:1.8;">
+            融合先进大模型技术，为您提供智能简历优化、精准岗位匹配、科学职业测评、专业简历生成与评价、全面面试准备，助您在求职路上如虎添翼
+        </p>
+        <div style="margin-top:2.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="/resume-optimize" style="display:inline-flex;align-items:center;justify-content:center;padding:0.875rem 2rem;background:white;color:#1d4ed8;font-weight:600;border-radius:12px;box-shadow:0 8px 20px rgba(255,255,255,0.2);text-decoration:none;transition:all 0.3s;">开始优化简历</a>
+            <a href="/career-assess" style="display:inline-flex;align-items:center;justify-content:center;padding:0.875rem 2rem;background:rgba(255,255,255,0.1);color:white;font-weight:600;border-radius:12px;border:1px solid rgba(255,255,255,0.2);text-decoration:none;transition:all 0.3s;">职业测评</a>
+        </div>
+    </div>
+</section>
+
+<!-- 功能卡片 -->
+<section style="max-width:1200px;margin:0 auto;padding:5rem 1.5rem;">
+    <div style="text-align:center;margin-bottom:4rem;">
+        <h2 style="font-size:2rem;font-weight:700;" class="gradient-text">核心功能</h2>
+        <p style="margin-top:1rem;color:#6b7280;font-size:1.1rem;">全方位AI赋能，让求职更高效</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;">
+        {% for f in features %}
+        <a href="{{ f.href }}" class="glass-card hover-lift" style="padding:2rem;text-decoration:none;display:block;">
+            <div style="width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.25rem;background:{{ f.gradient }};box-shadow:0 8px 16px {{ f.shadow }};">
+                {{ f.icon }}
+            </div>
+            <h3 style="font-size:1.2rem;font-weight:700;color:#1e293b;margin-bottom:0.75rem;">{{ f.title }}</h3>
+            <p style="color:#6b7280;line-height:1.7;font-size:0.925rem;">{{ f.desc }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- 数据统计 -->
+<section style="background:linear-gradient(135deg,#2563eb,#4f46e5);padding:4rem 0;">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;text-align:center;">
+        <div style="color:white;"><div style="font-size:2.25rem;font-weight:800;">6+</div><div style="margin-top:0.5rem;color:rgba(191,219,254,0.8);font-size:0.875rem;">核心功能</div></div>
+        <div style="color:white;"><div style="font-size:2.25rem;font-weight:800;">AI</div><div style="margin-top:0.5rem;color:rgba(191,219,254,0.8);font-size:0.875rem;">大模型驱动</div></div>
+        <div style="color:white;"><div style="font-size:2.25rem;font-weight:800;">PDF</div><div style="margin-top:0.5rem;color:rgba(191,219,254,0.8);font-size:0.875rem;">简历导出</div></div>
+        <div style="color:white;"><div style="font-size:2.25rem;font-weight:800;">AI</div><div style="margin-top:0.5rem;color:rgba(191,219,254,0.8);font-size:0.875rem;">智能面试</div></div>
+    </div>
+</section>
+
+<style>
+    @media(max-width:768px){
+        section>div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important;}
+        section>div[style*="grid-template-columns:repeat(4"]{grid-template-columns:repeat(2,1fr)!important;}
+    }
+</style>
+{% endblock %}

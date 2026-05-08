@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}简历生成 - AI求职助手{% endblock %}
+{% block content %}
+<div class="page-container" style="max-width:1000px;">
+    <div class="page-header">
+        <h1 class="gradient-text">简历生成</h1>
+        <p>填写信息，一键生成专业简历并导出PDF</p>
+    </div>
+
+    <!-- 基本信息 -->
+    <div class="glass-card card-section" style="margin-bottom:1.5rem;">
+        <h2><span class="step-badge" style="background:#fff7ed;color:#ea580c;">1</span>基本信息</h2>
+        <div class="form-row form-row-3">
+            <div><label class="form-label">姓名 *</label><input id="name" class="form-input" placeholder="张三"></div>
+            <div><label class="form-label">电话</label><input id="phone" class="form-input" placeholder="138-xxxx-xxxx"></div>
+            <div><label class="form-label">邮箱</label><input id="email" class="form-input" placeholder="email@example.com"></div>
+        </div>
+    </div>
+
+    <!-- 个人简介 -->
+    <div class="glass-card card-section" style="margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h2 style="margin-bottom:0;"><span class="step-badge" style="background:#dbeafe;color:#2563eb;">2</span>个人简介</h2>
+            <button class="btn" id="aiSummaryBtn" onclick="aiGenerateSummary()" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);color:white;font-size:0.8rem;padding:0.5rem 1rem;">AI帮我写</button>
+        </div>
+        <textarea id="summary" class="form-input" rows="4" placeholder="简要介绍您的背景、核心优势和职业目标..."></textarea>
+    </div>
+
+    <!-- 教育背景 -->
+    <div class="glass-card card-section" style="margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h2 style="margin-bottom:0;"><span class="step-badge" style="background:#d1fae5;color:#059669;">3</span>教育背景</h2>
+            <button class="btn btn-outline" onclick="addEducation()" style="font-size:0.8rem;padding:0.4rem 0.75rem;">+ 添加</button>
+        </div>
+        <div id="educationList"></div>
+    </div>
+
+    <!-- 工作经历 -->
+    <div class="glass-card card-section" style="margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h2 style="margin-bottom:0;"><span class="step-badge" style="background:#ede9fe;color:#7c3aed;">4</span>工作经历</h2>
+            <button class="btn btn-outline" onclick="addExperience()" style="font-size:0.8rem;padding:0.4rem 0.75rem;">+ 添加</button>
+        </div>
+        <div id="experienceList"></div>
+    </div>
+
+    <!-- 项目经历 -->
+    <div class="glass-card card-section" style="margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h2 style="margin-bottom:0;"><span class="step-badge" style="background:#ffe4e6;color:#e11d48;">5</span>项目经历</h2>
+            <button class="btn btn-outline" onclick="addProject()" style="font-size:0.8rem;padding:0.4rem 0.75rem;">+ 添加</button>
+        </div>
+        <div id="projectList"></div>
+    </div>
+
+    <!-- 技能特长 -->
+    <div class="glass-card card-section" style="margin-bottom:2rem;">
+        <h2><span class="step-badge" style="background:#e0e7ff;color:#4f46e5;">6</span>技能特长</h2>
+        <input id="skills" class="form-input" placeholder="用逗号分隔，如：Python, Java, 数据分析, 项目管理">
+    </div>
+
+    <!-- 下载按钮 -->
+    <div style="text-align:center;">
+        <button class="btn btn-primary" onclick="downloadPDF()" style="padding:1rem 2.5rem;font-size:1.1rem;background:linear-gradient(135deg,#f97316,#f59e0b);box-shadow:0 4px 16px rgba(249,115,22,0.3);">
+            下载PDF简历
+        </button>
+        <p style="margin-top:0.75rem;font-size:0.8rem;color:#9ca3af;">点击后将自动生成并下载PDF格式简历</p>
+    </div>
+</div>
+
+<script>
+let educationCount = 0;
+let experienceCount = 0;
+let projectCount = 0;
+
+function addEducation() {
+    educationCount++;
+    const id = educationCount;
+    const html = `<div class="item-card" id="edu-${id}">
+        <button class="remove-btn" onclick="this.parentElement.remove()">删除</button>
+        <div class="form-row form-row-4">
+            <input class="form-input edu-school" placeholder="学校名称">
+            <input class="form-input edu-major" placeholder="专业">
+            <select class="form-input edu-degree"><option>大专</option><option selected>本科</option><option>硕士</option><option>博士</option></select>
+            <input class="form-input edu-period" placeholder="2018-2022">
+        </div>
+        <textarea class="form-input edu-desc" rows="2" placeholder="补充描述（如GPA、奖项等）" style="margin-top:0.5rem;"></textarea>
+    </div>`;
+    document.getElementById('educationList').insertAdjacentHTML('beforeend', html);
+}
+
+function addExperience() {
+    experienceCount++;
+    const id = experienceCount;
+    const html = `<div class="item-card" id="exp-${id}">
+        <button class="remove-btn" onclick="this.parentElement.remove()">删除</button>
+        <div class="form-row form-row-3">
+            <input class="form-input exp-company" placeholder="公司名称">
+            <input class="form-input exp-position" placeholder="职位">
+            <input class="form-input exp-period" placeholder="2022.06-2024.03">
+        </div>
+        <textarea class="form-input exp-desc" rows="3" placeholder="工作内容和成果（建议用要点列表形式，突出量化成果）" style="margin-top:0.5rem;"></textarea>
+    </div>`;
+    document.getElementById('experienceList').insertAdjacentHTML('beforeend', html);
+}
+
+function addProject() {
+    projectCount++;
+    const id = projectCount;
+    const html = `<div class="item-card" id="proj-${id}">
+        <button class="remove-btn" onclick="this.parentElement.remove()">删除</button>
+        <div class="form-row form-row-3">
+            <input class="form-input proj-name" placeholder="项目名称">
+            <input class="form-input proj-role" placeholder="担任角色">
+            <input class="form-input proj-period" placeholder="项目周期">
+        </div>
+        <textarea class="form-input proj-desc" rows="2" placeholder="项目描述和您的贡献" style="margin-top:0.5rem;"></textarea>
+    </div>`;
+    document.getElementById('projectList').insertAdjacentHTML('beforeend', html);
+}
+
+function collectData() {
+    const education = [];
+    document.querySelectorAll('#educationList .item-card').forEach(card => {
+        education.push({
+            school: card.querySelector('.edu-school')?.value || '',
+            major: card.querySelector('.edu-major')?.value || '',
+            degree: card.querySelector('.edu-degree')?.value || '',
+            period: card.querySelector('.edu-period')?.value || '',
+            description: card.querySelector('.edu-desc')?.value || '',
+        });
+    });
+    const experience = [];
+    document.querySelectorAll('#experienceList .item-card').forEach(card => {
+        experience.push({
+            company: card.querySelector('.exp-company')?.value || '',
+            position: card.querySelector('.exp-position')?.value || '',
+            period: card.querySelector('.exp-period')?.value || '',
+            description: card.querySelector('.exp-desc')?.value || '',
+        });
+    });
+    const projects = [];
+    document.querySelectorAll('#projectList .item-card').forEach(card => {
+        projects.push({
+            name: card.querySelector('.proj-name')?.value || '',
+            role: card.querySelector('.proj-role')?.value || '',
+            period: card.querySelector('.proj-period')?.value || '',
+            description: card.querySelector('.proj-desc')?.value || '',
+        });
+    });
+    return {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        summary: document.getElementById('summary').value,
+        skills: document.getElementById('skills').value,
+        education, experience, projects,
+    };
+}
+
+async function downloadPDF() {
+    const data = collectData();
+    if (!data.name.trim()) { alert('请至少填写姓名'); return; }
+    try {
+        const res = await fetch('/api/generate-resume-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'PDF生成失败'); }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${data.name || 'resume'}_简历.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        alert(e.message);
+    }
+}
+
+async function aiGenerateSummary() {
+    const name = document.getElementById('name').value.trim();
+    if (!name) { alert('请至少填写姓名'); return; }
+    const btn = document.getElementById('aiSummaryBtn');
+    btn.disabled = true;
+    btn.textContent = 'AI生成中...';
+    try {
+        // 收集用户填写的所有信息
+        const data = collectData();
+        const info = `基本信息：
+- 姓名：${name}
+- 联系方式：${data.phone || '未填写'} / ${data.email || '未填写'}
+
+技能特长：${data.skills || '未填写'}
+
+教育背景：${formatList(data.education)}
+工作经历：${formatList(data.experience)}
+项目经历：${formatList(data.projects)}`;
+
+        const prompt = `你是一位专业的简历撰写顾问。请根据用户提供的完整简历信息（姓名、技能、教育背景、工作经历、项目经历），生成一段专业、个性化、有吸引力的个人简介。
+
+要求：
+1. 突出用户的核心优势和独特价值
+2. 结合用户的具体经历和技能进行描述，避免套话
+3. 使用有力的动词开头，如"主导"、"擅长"、"深耕"等
+4. 量化成果（如有），突出业绩
+5. 控制在3-5句话，80-150字
+6. 直接输出简介文本，不要使用Markdown标题格式，不要加引号`;
+
+        const res = await callAI(prompt, `请根据以下简历信息生成专业的个人简介：\n\n${info}`);
+        document.getElementById('summary').value = res.replace(/^["""]|["""]$/g, '').trim();
+    } catch (e) {
+        alert('AI生成失败: ' + e.message);
+    }
+    finally { btn.disabled = false; btn.textContent = 'AI帮我写'; }
+}
+
+function formatList(items) {
+    if (!items || items.length === 0) return '未填写';
+    return items.map((item, i) => {
+        const keys = Object.keys(item).filter(k => item[k]);
+        if (keys.length === 0) return `${i + 1}. 未填写`;
+        return `${i + 1}. ${keys.map(k => `${k}: ${item[k]}`).join(', ')}`;
+    }).join('\n');
+}
+
+// 初始各添加一条
+addEducation();
+addExperience();
+addProject();
+</script>
+{% endblock %}

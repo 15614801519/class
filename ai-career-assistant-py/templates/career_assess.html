@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}职业测评 - AI求职助手{% endblock %}
+{% block content %}
+<div class="page-container" style="max-width:800px;">
+    <div class="page-header">
+        <h1 class="gradient-text">职业测评</h1>
+        <p>科学的职业测评，帮助您找到最适合的职业方向</p>
+    </div>
+
+    <!-- 开始页 -->
+    <div id="startPage" class="glass-card card-section" style="text-align:center;padding:3rem;">
+        <div style="font-size:4rem;margin-bottom:1.5rem;">🧭</div>
+        <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:1rem;">发现您的职业方向</h2>
+        <p style="color:#6b7280;line-height:1.8;margin-bottom:1.5rem;">
+            本测评共10道题目，约需3-5分钟完成。<br>
+            基于AI大模型分析，从多维度评估您的职业性格，<br>
+            为您推荐最适合的职业方向和发展建议。
+        </p>
+        <button class="btn btn-primary" style="background:linear-gradient(135deg,#059669,#14b8a6);box-shadow:0 4px 12px rgba(16,185,129,0.3);" onclick="startAssess()">
+            开始测评
+        </button>
+    </div>
+
+    <!-- 答题页 -->
+    <div id="quizPage" style="display:none;">
+        <div style="text-align:center;margin-bottom:1.5rem;">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+            <p style="margin-top:0.5rem;font-size:0.875rem;color:#6b7280;" id="progressText">0/10 已完成</p>
+        </div>
+        <div class="glass-card card-section">
+            <h2 id="questionTitle" style="font-size:1.15rem;font-weight:700;margin-bottom:1.5rem;"></h2>
+            <div id="optionsContainer" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:2rem;">
+                <button class="btn btn-ghost" id="prevBtn" onclick="prevQuestion()" style="display:none;">上一题</button>
+                <div></div>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" style="display:none;background:linear-gradient(135deg,#059669,#14b8a6);">下一题</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果页 -->
+    <div id="resultPage" style="display:none;">
+        <div class="page-header">
+            <h1 class="gradient-text">职业测评结果</h1>
+        </div>
+        <div class="glass-card card-section">
+            <div id="resultContent" class="result-content"></div>
+        </div>
+        <div style="text-align:center;margin-top:1.5rem;">
+            <button class="btn btn-ghost" onclick="resetAssess()">重新测评</button>
+        </div>
+    </div>
+</div>
+<script>
+const QUESTIONS = [
+    { id:1, text:'在团队项目中，你更倾向于：', options:[
+        {value:'A',label:'主动组织协调，推动项目进展'},
+        {value:'B',label:'深入钻研技术细节，解决核心问题'},
+        {value:'C',label:'关注用户体验，提出创意想法'},
+        {value:'D',label:'分析数据，基于数据做决策'},
+    ]},
+    { id:2, text:'面对一个新的挑战，你通常会：', options:[
+        {value:'A',label:'快速行动，在实践中学习'},
+        {value:'B',label:'先制定详细计划，再稳步执行'},
+        {value:'C',label:'寻求他人意见，集思广益'},
+        {value:'D',label:'独立研究，深入分析后行动'},
+    ]},
+    { id:3, text:'你最享受的工作状态是：', options:[
+        {value:'A',label:'与不同的人交流协作'},
+        {value:'B',label:'专注解决复杂的技术难题'},
+        {value:'C',label:'发挥创造力，设计新方案'},
+        {value:'D',label:'整理分析信息，发现规律'},
+    ]},
+    { id:4, text:'关于职业发展，你最看重：', options:[
+        {value:'A',label:'领导力和影响力的提升'},
+        {value:'B',label:'专业深度的持续成长'},
+        {value:'C',label:'创新空间和自由度'},
+        {value:'D',label:'稳定性和可预期性'},
+    ]},
+    { id:5, text:'遇到压力时，你通常：', options:[
+        {value:'A',label:'积极应对，寻找解决方案'},
+        {value:'B',label:'冷静分析，逐步化解'},
+        {value:'C',label:'寻求支持，团队协作'},
+        {value:'D',label:'独处思考，自我调节'},
+    ]},
+    { id:6, text:'你对哪种类型的工作最感兴趣：', options:[
+        {value:'A',label:'管理和战略规划'},
+        {value:'B',label:'技术研发和工程'},
+        {value:'C',label:'设计和创意表达'},
+        {value:'D',label:'研究和数据分析'},
+    ]},
+    { id:7, text:'学习新事物时，你偏好：', options:[
+        {value:'A',label:'通过实践和动手操作'},
+        {value:'B',label:'系统学习理论和原理'},
+        {value:'C',label:'观察他人，模仿创新'},
+        {value:'D',label:'阅读资料，独立研究'},
+    ]},
+    { id:8, text:'你理想的团队角色是：', options:[
+        {value:'A',label:'领导者/决策者'},
+        {value:'B',label:'技术专家/问题解决者'},
+        {value:'C',label:'创意提供者/氛围带动者'},
+        {value:'D',label:'分析师/质量把关者'},
+    ]},
+    { id:9, text:'你对变化的看法是：', options:[
+        {value:'A',label:'拥抱变化，享受挑战'},
+        {value:'B',label:'理性看待，评估后适应'},
+        {value:'C',label:'变化带来新机会，乐在其中'},
+        {value:'D',label:'偏好稳定，谨慎对待变化'},
+    ]},
+    { id:10, text:'工作中获得成就感的方式：', options:[
+        {value:'A',label:'带领团队达成目标'},
+        {value:'B',label:'攻克技术难关'},
+        {value:'C',label:'创造出令人惊艳的作品'},
+        {value:'D',label:'发现关键洞察，优化决策'},
+    ]},
+];
+
+const SYSTEM_PROMPT = `你是一位资深的职业规划师和心理测评专家。根据用户的测评答案，提供专业的职业性格分析和职业发展建议。请包含以下内容：
+1. 性格类型分析
+2. 各维度得分展示
+3. 适合的职业方向（至少5个，附带匹配度百分比）
+4. 核心优势分析
+5. 发展建议
+请用Markdown格式输出，包含表格和结构化的内容。`;
+
+let currentQ = 0;
+let answers = {};
+
+function startAssess() {
+    document.getElementById('startPage').style.display = 'none';
+    document.getElementById('quizPage').style.display = 'block';
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const q = QUESTIONS[currentQ];
+    document.getElementById('questionTitle').innerHTML = `<span style="color:#059669;">Q${currentQ+1}.</span> ${q.text}`;
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = q.options.map(o => 
+        `<button class="option-btn ${answers[q.id]===o.value?'selected':''}" onclick="selectOption(${q.id},'${o.value}',this)">
+            <span style="font-weight:600;margin-right:0.75rem;color:#059669;">${o.value}.</span>${o.label}
+        </button>`
+    ).join('');
+    // 更新进度
+    const answered = Object.keys(answers).length;
+    document.getElementById('progressFill').style.width = (answered/QUESTIONS.length*100)+'%';
+    document.getElementById('progressText').textContent = `${answered}/${QUESTIONS.length} 已完成`;
+    // 按钮显示
+    document.getElementById('prevBtn').style.display = currentQ > 0 ? 'inline-flex' : 'none';
+    const nextBtn = document.getElementById('nextBtn');
+    const allDone = answered === QUESTIONS.length;
+    nextBtn.style.display = 'inline-flex';
+    nextBtn.textContent = allDone ? '查看结果' : '下一题';
+}
+
+function selectOption(qId, value, el) {
+    answers[qId] = value;
+    el.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    const answered = Object.keys(answers).length;
+    document.getElementById('progressFill').style.width = (answered/QUESTIONS.length*100)+'%';
+    document.getElementById('progressText').textContent = `${answered}/${QUESTIONS.length} 已完成`;
+    const allDone = answered === QUESTIONS.length;
+    document.getElementById('nextBtn').textContent = allDone ? '查看结果' : '下一题';
+}
+
+function nextQuestion() {
+    const allDone = Object.keys(answers).length === QUESTIONS.length;
+    if (allDone) { submitAssess(); return; }
+    if (currentQ < QUESTIONS.length - 1) { currentQ++; renderQuestion(); }
+}
+
+function prevQuestion() {
+    if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+async function submitAssess() {
+    document.getElementById('quizPage').style.display = 'none';
+    document.getElementById('resultPage').style.display = 'block';
+    const resultContent = document.getElementById('resultContent');
+    resultContent.innerHTML = loadingHTML();
+    const answerText = QUESTIONS.map(q => {
+        const opt = q.options.find(o => o.value === answers[q.id]);
+        return `Q${q.id}: ${q.text}\n选择: ${opt ? opt.label : '未作答'}`;
+    }).join('\n\n');
+    try {
+        const res = await callAI(SYSTEM_PROMPT, `以下是我的职业测评答案，请给出专业分析：\n\n${answerText}`);
+        resultContent.innerHTML = renderMarkdown(res);
+    } catch (e) {
+        resultContent.innerHTML = `<p style="color:#ef4444;">请求失败：${e.message}</p>`;
+    }
+}
+
+function resetAssess() {
+    answers = {};
+    currentQ = 0;
+    document.getElementById('resultPage').style.display = 'none';
+    document.getElementById('startPage').style.display = 'block';
+}
+</script>
+{% endblock %}

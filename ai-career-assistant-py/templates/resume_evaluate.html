@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}简历评价 - AI求职助手{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="gradient-text">简历评价</h1>
+        <p>AI多维度评估简历质量，给出评分和改进建议</p>
+    </div>
+    <div class="two-col">
+        <!-- 输入区 -->
+        <div class="glass-card card-section">
+            <h2><span class="step-badge" style="background:#ffe4e6;color:#e11d48;">1</span>上传/粘贴简历</h2>
+            <div class="upload-area">
+                <button class="upload-btn" style="background:#fff1f2;color:#e11d48;" onclick="document.getElementById('fileInput').click()">选择文件</button>
+                <span class="file-name" id="fileName"></span>
+                <input type="file" id="fileInput" accept=".pdf,.txt,.md" style="display:none;" onchange="handleFile(this)">
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label class="form-label">或直接粘贴简历内容</label>
+                <textarea id="resumeText" class="form-input" rows="12" placeholder="请在此粘贴您的简历内容..."></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" id="evalBtn" onclick="handleEvaluate()" style="background:linear-gradient(135deg,#e11d48,#ec4899);box-shadow:0 4px 12px rgba(225,29,72,0.3);">
+                开始评价
+            </button>
+        </div>
+        <!-- 结果区 -->
+        <div class="glass-card card-section">
+            <h2><span class="step-badge" style="background:#d1fae5;color:#059669;">2</span>评价报告</h2>
+            <div id="result" class="result-content">
+                <div class="empty-state">
+                    <div><div class="icon">📊</div><p>上传简历后点击评价，AI将多维度打分</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+const SYSTEM_PROMPT = `你是一位资深的HR和简历评审专家。你的任务是对用户提供的简历进行全面、专业的评价。请从以下维度进行评分和分析：
+1. 内容完整性（0-100分）
+2. 专业性（0-100分）
+3. 结构清晰度（0-100分）
+4. 关键词匹配（0-100分）
+5. 排版美观度（0-100分）
+6. 综合评分（加权平均）
+同时列出优点、需改进之处，并给出具体的改进优先级建议。
+请用Markdown格式输出，包含表格和清晰的结构。`;
+
+async function handleFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('fileName').textContent = file.name;
+    try {
+        const data = await uploadResume(file);
+        document.getElementById('resumeText').value = data.text;
+    } catch (e) { alert(e.message || '文件解析失败'); }
+}
+
+async function handleEvaluate() {
+    const text = document.getElementById('resumeText').value.trim();
+    if (!text) { alert('请输入或上传简历内容'); return; }
+    const btn = document.getElementById('evalBtn');
+    const result = document.getElementById('result');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> AI正在评估...';
+    result.innerHTML = loadingHTML();
+    try {
+        const res = await callAI(SYSTEM_PROMPT, `请评价以下简历：\n\n${text}`);
+        result.innerHTML = renderMarkdown(res);
+    } catch (e) {
+        result.innerHTML = `<p style="color:#ef4444;">请求失败：${e.message}</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '开始评价';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}AI简历优化 - AI求职助手{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="gradient-text">AI简历优化</h1>
+        <p>上传或粘贴您的简历，AI为您提供专业优化建议</p>
+    </div>
+    <div class="two-col">
+        <!-- 输入区 -->
+        <div class="glass-card card-section">
+            <h2><span class="step-badge" style="background:#dbeafe;color:#2563eb;">1</span>输入简历</h2>
+            <div class="upload-area">
+                <button class="upload-btn" style="background:#eff6ff;color:#2563eb;" onclick="document.getElementById('fileInput').click()">选择文件</button>
+                <span class="file-name" id="fileName"></span>
+                <input type="file" id="fileInput" accept=".pdf,.txt,.md" style="display:none;" onchange="handleFile(this)">
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label class="form-label">或直接粘贴简历内容</label>
+                <textarea id="resumeText" class="form-input" rows="12" placeholder="请在此粘贴您的简历内容..."></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" id="optimizeBtn" onclick="handleOptimize()">
+                开始优化
+            </button>
+        </div>
+        <!-- 结果区 -->
+        <div class="glass-card card-section">
+            <h2><span class="step-badge" style="background:#d1fae5;color:#059669;">2</span>优化建议</h2>
+            <div id="result" class="result-content">
+                <div class="empty-state">
+                    <div><div class="icon">✨</div><p>输入简历后点击优化，AI将为您提供专业建议</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+async function handleFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('fileName').textContent = file.name;
+    try {
+        const data = await uploadResume(file);
+        document.getElementById('resumeText').value = data.text;
+    } catch (e) {
+        alert(e.message || '文件解析失败');
+    }
+}
+
+async function handleOptimize() {
+    const text = document.getElementById('resumeText').value.trim();
+    if (!text) { alert('请输入或上传简历内容'); return; }
+    const btn = document.getElementById('optimizeBtn');
+    const result = document.getElementById('result');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> AI正在分析...';
+    result.innerHTML = loadingHTML();
+    try {
+        const prompt = `你是一位资深的人力资源专家和简历优化顾问。请仔细分析用户提供的简历内容，给出专业、详细、针对性的优化建议。
+
+请严格按照以下结构输出：
+## 📋 简历诊断
+
+### 综合评分
+给出0-100的评分，并说明评分依据。
+
+### ✅ 亮点保留
+分析简历中的优点，建议保留的内容。
+
+### 🔧 待优化问题
+针对简历中具体的问题，给出具体可操作的修改建议，不要泛泛而谈。
+
+### ✨ 优化示例
+针对简历中的具体段落，提供优化前后的对比示例（用表格展示）。
+
+### 💡 ATS优化建议
+根据常见 ATS 系统要求，给出关键词优化建议。
+
+请用Markdown格式输出，确保建议具体、可操作、有针对性。`;
+        const res = await callAI(prompt, `请分析并优化以下简历内容：\n\n${text}`);
+        result.innerHTML = renderMarkdown(res);
+    } catch (e) {
+        result.innerHTML = `<p style="color:#ef4444;">请求失败：${e.message}</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '开始优化';
+    }
+}
+</script>
+{% endblock %}
